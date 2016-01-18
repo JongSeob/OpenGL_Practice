@@ -5,37 +5,60 @@
 using namespace std;
 #pragma comment(lib,"opengl32.lib") // glClearColor(), glClear 등의 함수를 사용할 때 이 구문을 넣지 않으면 링크 에러 발생
 
-void MeGlWindow::initializeGL()
-{
-	glewInit(); // 초기화 하지 않으면 glew함수를 사용할 때 에러 발생
+extern const char* vertexShaderCode;
 
+void sendDataToOpenGL() 
+{
 	// vertex = 꼭짓점
 	GLfloat verts[] =    // 화면의 중심좌표 = (0, 0) 오른쪽 좌표 = (1, 0)  위쪽 좌표(0, 1)
 	{
 		+0.0f, +0.0f,   // 첫 번째 삼각형  index = 0
+		+1.0f, +0.0f, +0.0f,  // 꼭짓점의 RGB 데이터
 		+1.0f, +1.0f,   //                 index = 1
+		+1.0f, +0.0f, +0.0f,
 		-1.0f, +1.0f,   //                 index = 2
-
-		//+0.0f, +0.0f,	// 두 번째 삼각형
+		+1.0f, +0.0f, +0.0f,
 		-1.0f, -1.0f,   //                 index = 3
+		+1.0f, +0.0f, +0.0f,
 		+1.0f, -1.0f,   //                 index = 4
+		+1.0f, +0.0f, +0.0f
 	};
 
 	/*
-	 *	꼭지점 좌표를 이용해 삼각형을 그리는 2가지 방식
-	 *
-	 *  1. ARRAY 버퍼에 모든 꼭짓점을 저장한 후 순차적으로 읽어 꼭지점을 구한다. (중복되는 꼭지점도 모두 적어줘야한다.)
-	 *  2. 1.에서 등록한 ARRAY버퍼에 인덱스로 접근해서 꼭지점을 구한다.			 (인데스로 접근하므로 중복되는 꼭지점은 한번만 정의해도 된다.)
-	 */
-	
-	
+	*	꼭지점 좌표를 이용해 삼각형을 그리는 2가지 방식
+	*
+	*  1. ARRAY 버퍼에 모든 꼭짓점을 저장한 후 순차적으로 읽어 꼭지점을 구한다. (중복되는 꼭지점도 모두 적어줘야한다.)
+	*  2. 1.에서 등록한 ARRAY버퍼에 인덱스로 접근해서 꼭지점을 구한다.			 (인데스로 접근하므로 중복되는 꼭지점은 한번만 정의해도 된다.)
+	*/
+
+
 	GLuint vertexBufferID;
 	glGenBuffers(1, &vertexBufferID);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID); // GL_ARRAY_BUFFER 또는 GL_ELEMENT_ARRAY_BUFFER
 	glBufferData(GL_ARRAY_BUFFER, sizeof(verts), 
 		verts, GL_STATIC_DRAW);
+
+	
+
+	/*
+	 *	glEnableVertexAttribArray(0); 에서의 인자 0 과,
+	 *  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, 0); 에서의 첫 번째 인자 0은
+	 *  둘 다 index를 의미한다. 이것이 Vertex 의 좌표와 색상을 구분짓게 만든다.
+	 *
+	 *  그리고 glVertexAttribPointer의 2,3 번째 인자는 해당 성분의 인자가 2개의 float으로 이루어져 있단 것을 뜻한다.
+	 *
+	 *  여기까지의 내용은 MeShaderCode.cpp 에서 "in layout(location=0) vec2 position;" 을 봤을 때
+	 *  location=0의 숫자 0, vec2의 숫자 2와 매칭된다.
+	 */
+
+	// verts[] 배열에서 Vertex 좌표 위치
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
+	//glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0); 
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, 0);  // 5번째 인자 = strider = 포인터가 다음 인자를 가리킬 때 주소를 몇 증가시켜야 하는지에 대한
+	
+	// verts[] 배열에서 Vertex의 색상 위치
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (char*)(sizeof(float) * 2)); // 6번째 인자 = 처음 가리키는 위치
 
 	GLushort indices[] = {0,1,2,  0,3,4};
 	GLuint indexBufferID;
@@ -43,6 +66,20 @@ void MeGlWindow::initializeGL()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices),
 		indices, GL_STATIC_DRAW);
+}
+
+void installShader()
+{
+
+};
+
+void MeGlWindow::initializeGL()
+{
+	glewInit(); // 초기화 하지 않으면 glew함수를 사용할 때 에러 발생
+
+	sendDataToOpenGL();
+	installShader();
+
 
 }
 
