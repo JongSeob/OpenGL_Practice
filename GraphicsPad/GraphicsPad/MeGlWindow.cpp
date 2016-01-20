@@ -6,6 +6,7 @@ using namespace std;
 #pragma comment(lib,"opengl32.lib") // glClearColor(), glClear 등의 함수를 사용할 때 이 구문을 넣지 않으면 링크 에러 발생
 
 extern const char* vertexShaderCode;
+extern const char* fragmentShaderCode;
 
 void sendDataToOpenGL() 
 {
@@ -21,7 +22,7 @@ void sendDataToOpenGL()
 		-1.0f, -1.0f,   //                 index = 3
 		+1.0f, +0.0f, +0.0f,
 		+1.0f, -1.0f,   //                 index = 4
-		+1.0f, +0.0f, +0.0f
+		+1.0f, +0.0f, +0.0f,
 	};
 
 	/*
@@ -54,7 +55,7 @@ void sendDataToOpenGL()
 	// verts[] 배열에서 Vertex 좌표 위치
 	glEnableVertexAttribArray(0);
 	//glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0); 
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, 0);  // 5번째 인자 = strider = 포인터가 다음 인자를 가리킬 때 주소를 몇 증가시켜야 하는지에 대한
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, 0);  // 5번째 인자 = strider = 포인터가 다음 인자를 가리킬 때 주소를 몇 증가시켜야 하는지에 대한 정보
 	
 	// verts[] 배열에서 Vertex의 색상 위치
 	glEnableVertexAttribArray(1);
@@ -70,17 +71,34 @@ void sendDataToOpenGL()
 
 void installShader()
 {
+	GLuint vertexShaderID = glCreateShader(GL_VERTEX_SHADER);    // Vertex Shader Object 생성
+	GLuint fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);// Fragment Shader Object 생성
 
+	const char* adapter[1];
+	adapter[0] = vertexShaderCode;
+	glShaderSource(vertexShaderID, 1, adapter, 0); // 1 = adapter 배열 크기, adapter = 배열
+	adapter[0] = fragmentShaderCode;			   // 0 = ???
+	glShaderSource(fragmentShaderID, 1, adapter, 0);
+
+	glCompileShader(vertexShaderID);
+	glCompileShader(fragmentShaderID);
+
+	GLuint programID = glCreateProgram();		// 프로그램에 여러 컴파일 된 쉐이더를 포함시켜
+												// 링크시키고, GPU에서 실행시킨다.
+	glAttachShader(programID, vertexShaderID);
+	glAttachShader(programID, fragmentShaderID);
+	glLinkProgram(programID);
+
+	glUseProgram(programID);
+	
 };
 
 void MeGlWindow::initializeGL()
 {
 	glewInit(); // 초기화 하지 않으면 glew함수를 사용할 때 에러 발생
 
-	sendDataToOpenGL();
+	sendDataToOpenGL(); // 버퍼 생성, 버퍼에 좌표, 색상 데이터를 저장한다.
 	installShader();
-
-
 }
 
 void MeGlWindow::paintGL()
