@@ -3,6 +3,7 @@
 #include <iostream>
 
 using namespace std;
+
 #pragma comment(lib,"opengl32.lib") // glClearColor(), glClear 등의 함수를 사용할 때 이 구문을 넣지 않으면 링크 에러 발생
 
 extern const char* vertexShaderCode;
@@ -13,16 +14,23 @@ void sendDataToOpenGL()
 	// vertex = 꼭짓점
 	GLfloat verts[] =    // 화면의 중심좌표 = (0, 0) 오른쪽 좌표 = (1, 0)  위쪽 좌표(0, 1)
 	{
-		+0.0f, +0.0f,   // 첫 번째 삼각형  index = 0
-		+1.0f, +0.0f, +0.0f,  // 꼭짓점의 RGB 데이터
-		+1.0f, +1.0f,   //                 index = 1
-		+1.0f, +0.0f, +0.0f,
-		-1.0f, +1.0f,   //                 index = 2
-		+1.0f, +0.0f, +0.0f,
-		-1.0f, -1.0f,   //                 index = 3
-		+1.0f, +0.0f, +0.0f,
-		+1.0f, -1.0f,   //                 index = 4
-		+1.0f, +0.0f, +0.0f,
+			+0.0f, +1.0f,   //                 index = 2
+			+1.0f, +0.0f, +0.0f,
+			-1.0f, -1.0f,   //                 index = 3
+			+0.0f, +1.0f, +0.0f,
+			+1.0f, -1.0f,   //                 index = 4
+			+0.0f, +0.0f, +1.0f,
+
+// 		+0.0f, +0.0f,   // 첫 번째 삼각형  index = 0
+// 		+1.0f, +0.0f, +0.0f,  // 꼭짓점의 RGB 데이터
+// 		+1.0f, +1.0f,   //                 index = 1
+// 		+1.0f, +0.0f, +0.0f,
+// 		-1.0f, +1.0f,   //                 index = 2
+// 		+1.0f, +0.0f, +0.0f,
+// 		-1.0f, -1.0f,   //                 index = 3
+// 		+1.0f, +0.0f, +0.0f,
+// 		+1.0f, -1.0f,   //                 index = 4
+// 		+1.0f, +0.0f, +0.0f,
 	};
 
 	/*
@@ -61,12 +69,49 @@ void sendDataToOpenGL()
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (char*)(sizeof(float) * 2)); // 6번째 인자 = 처음 가리키는 위치
 
-	GLushort indices[] = {0,1,2,  0,3,4};
+	GLushort indices[] = {0,1,2};
 	GLuint indexBufferID;
 	glGenBuffers(1, &indexBufferID);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices),
 		indices, GL_STATIC_DRAW);
+}
+
+bool checkStatus(
+	GLuint objectID, 
+	PFNGLGETSHADERIVPROC objectPropertyGetterFunc, // PFNGLGETSHADERIVPROC = glGetShaderiv 등의 상태반환 함수를 저장하는 함수 포인터 자료형
+	PFNGLGETSHADERINFOLOGPROC getInfoLogFunc,	   // PFNGLGETSHADERINFOLOGPROC = glGetShaderInfoLog 등 InfoLog함수주소를 저장하는 포인터
+	GLenum statusType)
+{
+	GLint compileStatus;
+	objectPropertyGetterFunc(objectID, statusType, &compileStatus); // 오류 여부를 3번째 인자에 넘긴다.
+	//iv = integer vector
+	if(compileStatus != GL_TRUE) // 비정상일 경우 GL_FALSE 반환.
+	{
+		GLint infoLogLength;
+		objectPropertyGetterFunc(objectID, GL_INFO_LOG_LENGTH, &infoLogLength);
+		GLchar* buffer = new GLchar[infoLogLength]; // 오류 메시지(문자열)을 받을 버퍼.
+
+		GLsizei bufferSize;
+		getInfoLogFunc(objectID, infoLogLength, &bufferSize, buffer);
+		cout << buffer << endl;
+		delete []buffer;
+		return false;
+	}	
+
+	return true;
+}
+
+//***** 쉐이더 컴파일 오류확인 코드 *****//
+bool checkShaderStatus( GLuint shaderID ) 
+{	
+	return checkStatus(shaderID, glGetShaderiv, glGetShaderInfoLog, GL_COMPILE_STATUS);
+}
+
+//***** 프로그램 링크 오류확인 코드(쉐이터 컴파일 오류확인 코드와 거의 같다.) *****//
+bool checkProgramStatus( GLuint programID ) 
+{	
+	return checkStatus(programID, glGetProgramiv, glGetProgramInfoLog, GL_LINK_STATUS);
 }
 
 void installShader()
@@ -83,11 +128,19 @@ void installShader()
 	glCompileShader(vertexShaderID);
 	glCompileShader(fragmentShaderID);
 
+	// 컴파일에러 체크 //
+	if( !checkShaderStatus(vertexShaderID) || !checkShaderStatus(fragmentShaderID) )
+		return;
+
 	GLuint programID = glCreateProgram();		// 프로그램에 여러 컴파일 된 쉐이더를 포함시켜
 												// 링크시키고, GPU에서 실행시킨다.
 	glAttachShader(programID, vertexShaderID);
 	glAttachShader(programID, fragmentShaderID);
 	glLinkProgram(programID);
+
+	// 링크에러 체크 //
+	if( !checkProgramStatus(programID))
+		return;
 
 	glUseProgram(programID);
 	
@@ -106,7 +159,7 @@ void MeGlWindow::paintGL()
 	glViewport(0, 0, width(), height()); // 도형의(삼각형의) 크기를 윈도우 크기에 딱 맞춘다.
 	//glDrawArrays(GL_TRIANGLES, 0, 6);	 // 3번째 인자 = 꼭짓점 갯수
 
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
+	glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_SHORT, 0);
 	
 	
 
