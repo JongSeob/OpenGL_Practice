@@ -1,13 +1,11 @@
 #include <gl/glew.h>
-#include "MeGlWindow.h"
 #include <iostream>
+#include <fstream>
+#include "MeGlWindow.h"
 
 using namespace std;
 
 #pragma comment(lib,"opengl32.lib") // glClearColor(), glClear 등의 함수를 사용할 때 이 구문을 넣지 않으면 링크 에러 발생
-
-extern const char* vertexShaderCode;
-extern const char* fragmentShaderCode;
 
 void sendDataToOpenGL() 
 {
@@ -114,15 +112,34 @@ bool checkProgramStatus( GLuint programID )
 	return checkStatus(programID, glGetProgramiv, glGetProgramInfoLog, GL_LINK_STATUS);
 }
 
+string readShaderCode(const char* fileName)
+{
+	ifstream meInput(fileName);
+	
+	if(!meInput.good())
+	{
+		cout << "File failed to load..." << fileName;
+		exit(1);
+	}
+
+	return std::string(
+		std::istreambuf_iterator<char>(meInput), 
+		std::istreambuf_iterator<char>() );
+}
+
 void installShader()
 {
 	GLuint vertexShaderID = glCreateShader(GL_VERTEX_SHADER);    // Vertex Shader Object 생성
 	GLuint fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);// Fragment Shader Object 생성
 
 	const char* adapter[1];
-	adapter[0] = vertexShaderCode;
+	
+	string temp = readShaderCode("VertexShaderCode.glsl");
+	adapter[0] = temp.c_str();
 	glShaderSource(vertexShaderID, 1, adapter, 0); // 1 = adapter 배열 크기, adapter = 배열
-	adapter[0] = fragmentShaderCode;			   // 0 = ???
+												   // 0 = ???
+	temp = readShaderCode("FragmentShaderCode.glsl");
+	adapter[0] = temp.c_str();
 	glShaderSource(fragmentShaderID, 1, adapter, 0);
 
 	glCompileShader(vertexShaderID);

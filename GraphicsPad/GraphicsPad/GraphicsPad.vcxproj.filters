@@ -21,13 +21,18 @@
     <ClCompile Include="MeGlWindow.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="MeShaderCode.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MeGlWindow.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="VertexShaderCode.glsl">
+      <Filter>헤더 파일</Filter>
+    </None>
+    <None Include="FragmentShaderCode.glsl">
+      <Filter>헤더 파일</Filter>
+    </None>
   </ItemGroup>
 </Project>
