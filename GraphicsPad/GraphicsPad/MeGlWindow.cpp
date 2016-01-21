@@ -5,74 +5,61 @@
 
 using namespace std;
 
+const float X_DELTA = 0.1f;
+const uint NUM_VERTICES_PER_TRI = 3;
+const uint NUM_FLOATS_PER_VERTICE = 6; // x,y,z  ,  r,g,b 꼭짓점당 6개의 정보.
+const uint TRIANGLE_BYTE_SIZE = NUM_VERTICES_PER_TRI * NUM_FLOATS_PER_VERTICE * sizeof(float);
+const uint MAX_TRIS = 20;
+
+uint numTris = 0;
+
 #pragma comment(lib,"opengl32.lib") // glClearColor(), glClear 등의 함수를 사용할 때 이 구문을 넣지 않으면 링크 에러 발생
 
 void sendDataToOpenGL() 
 {
-	// vertex = 꼭짓점
-	GLfloat verts[] =    // 화면의 중심좌표 = (0, 0) 오른쪽 좌표 = (1, 0)  위쪽 좌표(0, 1)
-	{
-			+0.0f, +1.0f,   //                 index = 2
-			+1.0f, +0.0f, +0.0f,
-			-1.0f, -1.0f,   //                 index = 3
-			+0.0f, +1.0f, +0.0f,
-			+1.0f, -1.0f,   //                 index = 4
-			+0.0f, +0.0f, +1.0f,
-
-// 		+0.0f, +0.0f,   // 첫 번째 삼각형  index = 0
-// 		+1.0f, +0.0f, +0.0f,  // 꼭짓점의 RGB 데이터
-// 		+1.0f, +1.0f,   //                 index = 1
-// 		+1.0f, +0.0f, +0.0f,
-// 		-1.0f, +1.0f,   //                 index = 2
-// 		+1.0f, +0.0f, +0.0f,
-// 		-1.0f, -1.0f,   //                 index = 3
-// 		+1.0f, +0.0f, +0.0f,
-// 		+1.0f, -1.0f,   //                 index = 4
-// 		+1.0f, +0.0f, +0.0f,
-	};
-
-	/*
-	*	꼭지점 좌표를 이용해 삼각형을 그리는 2가지 방식
-	*
-	*  1. ARRAY 버퍼에 모든 꼭짓점을 저장한 후 순차적으로 읽어 꼭지점을 구한다. (중복되는 꼭지점도 모두 적어줘야한다.)
-	*  2. 1.에서 등록한 ARRAY버퍼에 인덱스로 접근해서 꼭지점을 구한다.			 (인데스로 접근하므로 중복되는 꼭지점은 한번만 정의해도 된다.)
-	*/
-
-
 	GLuint vertexBufferID;
 	glGenBuffers(1, &vertexBufferID);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID); // GL_ARRAY_BUFFER 또는 GL_ELEMENT_ARRAY_BUFFER
-	glBufferData(GL_ARRAY_BUFFER, sizeof(verts), 
-		verts, GL_STATIC_DRAW);
-
-	
-
-	/*
-	 *	glEnableVertexAttribArray(0); 에서의 인자 0 과,
-	 *  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, 0); 에서의 첫 번째 인자 0은
-	 *  둘 다 index를 의미한다. 이것이 Vertex 의 좌표와 색상을 구분짓게 만든다.
-	 *
-	 *  그리고 glVertexAttribPointer의 2,3 번째 인자는 해당 성분의 인자가 2개의 float으로 이루어져 있단 것을 뜻한다.
-	 *
-	 *  여기까지의 내용은 MeShaderCode.cpp 에서 "in layout(location=0) vec2 position;" 을 봤을 때
-	 *  location=0의 숫자 0, vec2의 숫자 2와 매칭된다.
-	 */
-
-	// verts[] 배열에서 Vertex 좌표 위치
+	glBufferData(GL_ARRAY_BUFFER, MAX_TRIS * TRIANGLE_BYTE_SIZE, NULL, GL_STATIC_DRAW); // 버퍼를 MAX_TRIS * TRIANGLE_BYTE_SIZE 크기로 늘린다.(내용물은 NULL)
 	glEnableVertexAttribArray(0);
-	//glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0); 
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, 0);  // 5번째 인자 = strider = 포인터가 다음 인자를 가리킬 때 주소를 몇 증가시켜야 하는지에 대한 정보
-	
-	// verts[] 배열에서 Vertex의 색상 위치
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (char*)(sizeof(float) * 2)); // 6번째 인자 = 처음 가리키는 위치
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, 0); // sizeof(float) * 6 - 다음 Vertex의 성분으로 이동할 때 몇칸 이동할지에 대한 정보
+	glEnableVertexAttribArray(1);										   // 0 - 첫 데이터의 offset
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (char*)(sizeof(float) * 3));
+}
 
-	GLushort indices[] = {0,1,2};
-	GLuint indexBufferID;
-	glGenBuffers(1, &indexBufferID);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices),
-		indices, GL_STATIC_DRAW);
+void sendAnotherTriToOpenGL()
+{
+	if(numTris == MAX_TRIS)
+		return;
+
+	const GLfloat THIS_TRI_X = -1 + numTris * X_DELTA;
+	GLfloat thisTri[] = 
+	{
+		THIS_TRI_X, 1.0f, 0.0f,
+		1.0f, 0.0f, 0.0f,
+
+		THIS_TRI_X+X_DELTA, 1.0f, 0.0f,
+		1.0f, 0.0f, 0.0f,
+
+		THIS_TRI_X, 0.0f, 0.0f,
+		1.0f, 0.0f, 0.0f,
+	};
+
+	glBufferSubData(GL_ARRAY_BUFFER,  // target=타겟버퍼, offset=총오프셋, size=개당크기, data=버퍼에 저장할 데이터 //
+		numTris * TRIANGLE_BYTE_SIZE, TRIANGLE_BYTE_SIZE, thisTri);
+	
+	numTris++;
+}
+
+void MeGlWindow::paintGL()
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glViewport(0, 0, width(), height()); // 도형의(삼각형의) 크기를 윈도우 크기에 딱 맞춘다.
+	sendAnotherTriToOpenGL();
+	//						    first     count
+	//glDrawArrays(GL_TRIANGLES, 0, numTris * NUM_VERTICES_PER_TRI);
+	glDrawArrays(GL_TRIANGLES, (numTris - 1) * NUM_VERTICES_PER_TRI, NUM_VERTICES_PER_TRI); // **** front buffer, back buffer를 이용. 번갈아가면서 화면에 출력한다.  **** //
+																							// 화면에 출력 = Color Buffer에 픽셀 데이터 입력	
 }
 
 bool checkStatus(
@@ -167,20 +154,9 @@ void MeGlWindow::initializeGL()
 {
 	glewInit(); // 초기화 하지 않으면 glew함수를 사용할 때 에러 발생
 
+	glEnable(GL_DEPTH_TEST); // 먼저 그려지는 도형과 나중에 그려지는 도형의 depth정보를 비교해서
+							 // 이미지가 겹치는 경우 depth가 높은 color를 colorBuffer에 저장한다.
+
 	sendDataToOpenGL(); // 버퍼 생성, 버퍼에 좌표, 색상 데이터를 저장한다.
 	installShader();
-}
-
-void MeGlWindow::paintGL()
-{
-	glViewport(0, 0, width(), height()); // 도형의(삼각형의) 크기를 윈도우 크기에 딱 맞춘다.
-	//glDrawArrays(GL_TRIANGLES, 0, 6);	 // 3번째 인자 = 꼭짓점 갯수
-
-	glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_SHORT, 0);
-	
-	
-
-	// 화면을 한가지 색상으로 칠한다.
-	//glClearColor(0, 1, 0, 1);
-	//glClear(GL_COLOR_BUFFER_BIT);
 }
