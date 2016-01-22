@@ -17,10 +17,22 @@ uint numTris = 0;
 
 void sendDataToOpenGL() 
 {
+	GLfloat myTri[] =
+	{
+		+0.0f, +1.0f, +0.0f,
+		+1.0f, +0.0f, +0.0f,
+
+		-1.0f, -1.0f, +0.0f,
+		+0.0f, +1.0f, +0.0f,
+
+		+1.0f, -1.0f, +0.0f,
+		+0.0f, +0.0f, +1.0f,
+	};
+
 	GLuint vertexBufferID;
 	glGenBuffers(1, &vertexBufferID);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID); // GL_ARRAY_BUFFER 또는 GL_ELEMENT_ARRAY_BUFFER
-	glBufferData(GL_ARRAY_BUFFER, MAX_TRIS * TRIANGLE_BYTE_SIZE, NULL, GL_STATIC_DRAW); // 버퍼를 MAX_TRIS * TRIANGLE_BYTE_SIZE 크기로 늘린다.(내용물은 NULL)
+	glBufferData(GL_ARRAY_BUFFER, sizeof(myTri), myTri, GL_STATIC_DRAW); // 버퍼를 MAX_TRIS * TRIANGLE_BYTE_SIZE 크기로 늘린다.(내용물은 NULL)
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, 0); // sizeof(float) * 6 - 다음 Vertex의 성분으로 이동할 때 몇칸 이동할지에 대한 정보
 	glEnableVertexAttribArray(1);										   // 0 - 첫 데이터의 offset
@@ -55,10 +67,12 @@ void MeGlWindow::paintGL()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glViewport(0, 0, width(), height()); // 도형의(삼각형의) 크기를 윈도우 크기에 딱 맞춘다.
-	sendAnotherTriToOpenGL();
+	glDrawArrays(GL_TRIANGLES, 0, NUM_VERTICES_PER_TRI);
+	
+	//sendAnotherTriToOpenGL();
 	//						    first     count
 	//glDrawArrays(GL_TRIANGLES, 0, numTris * NUM_VERTICES_PER_TRI);
-	glDrawArrays(GL_TRIANGLES, (numTris - 1) * NUM_VERTICES_PER_TRI, NUM_VERTICES_PER_TRI); // **** front buffer, back buffer를 이용. 번갈아가면서 화면에 출력한다.  **** //
+	//glDrawArrays(GL_TRIANGLES, (numTris - 1) * NUM_VERTICES_PER_TRI, NUM_VERTICES_PER_TRI); // **** front buffer, back buffer를 이용. 번갈아가면서 화면에 출력한다.  **** //
 																							// 화면에 출력 = Color Buffer에 픽셀 데이터 입력	
 }
 
