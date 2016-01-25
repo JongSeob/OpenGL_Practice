@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="쉐이더 코드">
+      <UniqueIdentifier>{da30a693-6206-489c-84a9-f16d9e2cd2d9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Mainer.cpp">
@@ -21,8 +24,8 @@
     <ClCompile Include="MeGlWindow.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Vertex.cpp">
-      <Filter>헤더 파일</Filter>
+    <ClCompile Include="ShapeGenerator.cpp">
+      <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -32,13 +35,19 @@
     <ClInclude Include="Vertex.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="ShapeData.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="ShapeGenerator.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="VertexShaderCode.glsl">
-      <Filter>헤더 파일</Filter>
+      <Filter>쉐이더 코드</Filter>
     </None>
     <None Include="FragmentShaderCode.glsl">
-      <Filter>헤더 파일</Filter>
+      <Filter>쉐이더 코드</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -3,7 +3,8 @@
 #include <fstream>
 #include <glm/glm.hpp>
 #include "MeGlWindow.h"
-#include "Vertex.h"
+#include "Primitive/Vertex.h"
+#include "Primitive/ShapeGenerator.h"
 
 #pragma comment(lib,"opengl32.lib") // glClearColor(), glClear 등의 함수를 사용할 때 이 구문을 넣지 않으면 링크 에러 발생
 
@@ -19,26 +20,21 @@ uint numTris = 0;
 
 void sendDataToOpenGL() 
 {
-	Vertex myTri[] =
-	{
-		glm::vec3(+0.0f, +1.0f, +0.0f),
-		glm::vec3(+1.0f, +0.0f, +0.0f),
-
-		glm::vec3(-1.0f, -1.0f, +0.0f),
-		glm::vec3(+0.0f, +1.0f, +0.0f),
-
-		glm::vec3(+1.0f, -1.0f, +0.0f),
-		glm::vec3(+0.0f, +0.0f, +1.0f),
-	};		
+	ShapeData tri = ShapeGenerator::makeTriangle();
 
 	GLuint vertexBufferID;
 	glGenBuffers(1, &vertexBufferID);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID); // GL_ARRAY_BUFFER 또는 GL_ELEMENT_ARRAY_BUFFER
-	glBufferData(GL_ARRAY_BUFFER, sizeof(myTri), myTri, GL_STATIC_DRAW); // 버퍼를 MAX_TRIS * TRIANGLE_BYTE_SIZE 크기로 늘린다.(내용물은 NULL)
+	glBufferData(GL_ARRAY_BUFFER, tri.vertexBufferSize(), tri.vertices, GL_STATIC_DRAW); // 버퍼를 MAX_TRIS * TRIANGLE_BYTE_SIZE 크기로 늘린다.(내용물은 NULL)
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, 0); // sizeof(float) * 6 - 다음 Vertex의 성분으로 이동할 때 몇칸 이동할지에 대한 정보
 	glEnableVertexAttribArray(1);										   // 0 - 첫 데이터의 offset
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (char*)(sizeof(float) * 3));
+
+	GLuint indexArrayBufferID;
+	glGenBuffers(1, &indexArrayBufferID);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexArrayBufferID);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, tri.indexBufferSize(), tri.indices, GL_STATIC_DRAW);
 }
 
 void sendAnotherTriToOpenGL()

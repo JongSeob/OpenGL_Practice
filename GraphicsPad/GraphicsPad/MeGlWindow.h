@@ -3,7 +3,7 @@
 
 #include <QtOpenGL/QGLWidget>
 
-class MeGlWindow : public QGLWidget
+class MeGlWindow : public QGLWidget // QGLWidget - Qt 화면에 출력되는 Opengl Widget
 {
 protected:
 	// virtual 함수들
