@@ -1,7 +1,11 @@
 #include <gl/glew.h>
 #include <iostream>
 #include <fstream>
+#include <glm/glm.hpp>
 #include "MeGlWindow.h"
+#include "Vertex.h"
+
+#pragma comment(lib,"opengl32.lib") // glClearColor(), glClear 등의 함수를 사용할 때 이 구문을 넣지 않으면 링크 에러 발생
 
 using namespace std;
 
@@ -13,21 +17,19 @@ const uint MAX_TRIS = 20;
 
 uint numTris = 0;
 
-#pragma comment(lib,"opengl32.lib") // glClearColor(), glClear 등의 함수를 사용할 때 이 구문을 넣지 않으면 링크 에러 발생
-
 void sendDataToOpenGL() 
 {
-	GLfloat myTri[] =
+	Vertex myTri[] =
 	{
-		+0.0f, +1.0f, +0.0f,
-		+1.0f, +0.0f, +0.0f,
+		glm::vec3(+0.0f, +1.0f, +0.0f),
+		glm::vec3(+1.0f, +0.0f, +0.0f),
 
-		-1.0f, -1.0f, +0.0f,
-		+0.0f, +1.0f, +0.0f,
+		glm::vec3(-1.0f, -1.0f, +0.0f),
+		glm::vec3(+0.0f, +1.0f, +0.0f),
 
-		+1.0f, -1.0f, +0.0f,
-		+0.0f, +0.0f, +1.0f,
-	};
+		glm::vec3(+1.0f, -1.0f, +0.0f),
+		glm::vec3(+0.0f, +0.0f, +1.0f),
+	};		
 
 	GLuint vertexBufferID;
 	glGenBuffers(1, &vertexBufferID);
