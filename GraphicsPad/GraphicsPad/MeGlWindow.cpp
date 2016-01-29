@@ -35,6 +35,7 @@ void sendDataToOpenGL()
 	glGenBuffers(1, &indexArrayBufferID);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexArrayBufferID);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, tri.indexBufferSize(), tri.indices, GL_STATIC_DRAW);
+	tri.cleanup();
 }
 
 void sendAnotherTriToOpenGL()
