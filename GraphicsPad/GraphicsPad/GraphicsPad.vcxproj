@@ -80,9 +80,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MeGlWindow.h" />
+    <ClInclude Include="Primitive\ShapeGenerator.h" />
+    <ClInclude Include="Primitive\Vertex.h" />
     <ClInclude Include="ShapeData.h" />
-    <ClInclude Include="ShapeGenerator.h" />
-    <ClInclude Include="Vertex.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="FragmentShaderCode.glsl" />

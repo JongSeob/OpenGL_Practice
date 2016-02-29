@@ -32,13 +32,13 @@
     <ClInclude Include="MeGlWindow.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="Vertex.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="ShapeData.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="ShapeGenerator.h">
+    <ClInclude Include="Primitive\ShapeGenerator.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Primitive\Vertex.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
